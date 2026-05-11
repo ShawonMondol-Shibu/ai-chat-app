@@ -13,6 +13,7 @@ import { ApiAIService, ApiStorageService } from "@/services";
 import { Header, Sidebar, ChatArea, ChatInput } from "@/components/chat";
 import { ProfileDialog } from "@/components/profile";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 import { motion } from "framer-motion";
 
 const SettingsDialog = lazy(() =>
@@ -45,7 +46,21 @@ function ChatLayout() {
 
   return (
     <TooltipProvider>
-      <motion.div className="flex h-screen flex-col" variants={containerVariants} initial="hidden" animate="visible">
+      <motion.div className="relative flex h-screen flex-col overflow-hidden" variants={containerVariants} initial="hidden" animate="visible">
+        <DottedGlowBackground
+          className="pointer-events-none -z-10"
+          opacity={0.4}
+          gap={16}
+          radius={1.5}
+          colorLightVar="--color-neutral-400"
+          glowColorLightVar="--color-primary"
+          colorDarkVar="--color-neutral-700"
+          glowColorDarkVar="--color-primary"
+          backgroundOpacity={0}
+          speedMin={0.3}
+          speedMax={1.5}
+          speedScale={1}
+        />
         <motion.div variants={childVariants} transition={{ duration: 0.5, type: "tween", ease: "easeOut" }}>
           <Header
             user={user}
