@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useRef } from "react";
 import { type User } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,8 @@ import {
 import { motion } from "framer-motion";
 import { LogOut, Settings, User as UserIcon, Sparkles } from "lucide-react";
 import { fadeInDown, transitionSlow } from "@/constants";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 interface HeaderProps {
   user?: User | null;
@@ -22,7 +25,29 @@ interface HeaderProps {
   onSettings?: () => void;
 }
 
-export function Header({ user, onSignIn, onSignOut, onSettings }: HeaderProps) {
+export const Header = memo(function Header({
+  user,
+  onSignIn,
+  onSignOut,
+  onSettings,
+}: HeaderProps) {
+  const iconRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (!iconRef.current) return;
+      gsap.to(iconRef.current, {
+        rotate: 360,
+        scale: 1.1,
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+    },
+    { scope: iconRef },
+  );
+
   return (
     <motion.header
       initial={fadeInDown.initial}
@@ -31,8 +56,10 @@ export function Header({ user, onSignIn, onSignOut, onSettings }: HeaderProps) {
       className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b bg-background/80 px-6 backdrop-blur-lg"
     >
       <div className="flex items-center gap-2">
-        <Sparkles className="h-6 w-6 text-primary" />
-        <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
+        <div ref={iconRef}>
+          <Sparkles className="h-6 w-6 text-primary" />
+        </div>
+        <span className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%] bg-clip-text text-transparent">
           AI Chat
         </span>
       </div>
@@ -88,4 +115,4 @@ export function Header({ user, onSignIn, onSignOut, onSettings }: HeaderProps) {
       )}
     </motion.header>
   );
-}
+});

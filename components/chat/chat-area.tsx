@@ -1,20 +1,38 @@
 "use client";
 
+import { memo, useRef, useEffect } from "react";
 import { type Message } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatMessage } from "./chat-message";
 import { QuickStartCard } from "./quick-start-card";
-import { QUICK_START_CARDS, fadeInScale, fadeInUp, transitionSlow } from "@/constants";
+import {
+  QUICK_START_CARDS,
+  fadeInScale,
+  fadeInUp,
+  transitionSlow,
+} from "@/constants";
 import { Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 interface ChatAreaProps {
   messages: Message[];
   isLoading?: boolean;
 }
 
-export function ChatArea({ messages, isLoading = false }: ChatAreaProps) {
+export const ChatArea = memo(function ChatArea({
+  messages,
+  isLoading = false,
+}: ChatAreaProps) {
   const hasMessages = messages.length > 0;
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -25,18 +43,38 @@ export function ChatArea({ messages, isLoading = false }: ChatAreaProps) {
           ) : (
             <>
               {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                />
               ))}
               {isLoading && <LoadingIndicator />}
             </>
           )}
+          <div ref={bottomRef} />
         </div>
       </ScrollArea>
     </div>
   );
-}
+});
 
 function EmptyState() {
+  const iconRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (!iconRef.current) return;
+      gsap.to(iconRef.current, {
+        y: -8,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+    },
+    { scope: iconRef },
+  );
+
   return (
     <motion.div
       initial={fadeInScale.initial}
@@ -44,7 +82,10 @@ function EmptyState() {
       transition={{ duration: 0.5 }}
       className="flex flex-1 flex-col items-center justify-center py-20"
     >
-      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-accent/10">
+      <div
+        ref={iconRef}
+        className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-accent/10"
+      >
         <Sparkles className="h-10 w-10 text-primary" />
       </div>
       <h2 className="mb-2 text-2xl font-semibold">Welcome to AI Chat</h2>

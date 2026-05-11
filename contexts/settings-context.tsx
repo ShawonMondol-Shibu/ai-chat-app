@@ -39,42 +39,46 @@ export function SettingsProvider({
     });
   }, [storageService]);
 
-  const persistSettings = useCallback(
-    (updated: AppSettings) => {
-      setSettings(updated);
-      storageService.saveSettings(updated);
+  const updateAppearance = useCallback(
+    (appearance: Partial<AppSettings["appearance"]>) => {
+      setSettings((prev) => {
+        const updated = {
+          ...prev,
+          appearance: { ...prev.appearance, ...appearance },
+        };
+        storageService.saveSettings(updated);
+        return updated;
+      });
     },
     [storageService],
   );
 
-  const updateAppearance = useCallback(
-    (appearance: Partial<AppSettings["appearance"]>) => {
-      persistSettings({
-        ...settings,
-        appearance: { ...settings.appearance, ...appearance },
-      });
-    },
-    [settings, persistSettings],
-  );
-
   const updateNotifications = useCallback(
     (notifications: Partial<AppSettings["notifications"]>) => {
-      persistSettings({
-        ...settings,
-        notifications: { ...settings.notifications, ...notifications },
+      setSettings((prev) => {
+        const updated = {
+          ...prev,
+          notifications: { ...prev.notifications, ...notifications },
+        };
+        storageService.saveSettings(updated);
+        return updated;
       });
     },
-    [settings, persistSettings],
+    [storageService],
   );
 
   const updatePrivacy = useCallback(
     (privacy: Partial<AppSettings["privacy"]>) => {
-      persistSettings({
-        ...settings,
-        privacy: { ...settings.privacy, ...privacy },
+      setSettings((prev) => {
+        const updated = {
+          ...prev,
+          privacy: { ...prev.privacy, ...privacy },
+        };
+        storageService.saveSettings(updated);
+        return updated;
       });
     },
-    [settings, persistSettings],
+    [storageService],
   );
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, lazy, Suspense, useRef } from "react";
 import {
   ChatProvider,
   SettingsProvider,
@@ -10,8 +10,13 @@ import {
 } from "@/contexts";
 import { MockAIService, MockStorageService } from "@/services";
 import { Header, Sidebar, ChatArea, ChatInput } from "@/components/chat";
-import { SettingsDialog } from "@/components/settings";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+
+const SettingsDialog = lazy(() =>
+  import("@/components/settings").then((m) => ({ default: m.SettingsDialog })),
+);
 
 const aiService = new MockAIService();
 const storageService = new MockStorageService();
@@ -22,10 +27,25 @@ function ChatLayout() {
   const { user, signIn, signOut } = useAuthContext();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const layoutRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (!layoutRef.current) return;
+      gsap.from(layoutRef.current.children, {
+        opacity: 0,
+        y: 20,
+        duration: 0.5,
+        stagger: 0.1,
+        ease: "power3.out",
+      });
+    },
+    { scope: layoutRef },
+  );
 
   return (
     <TooltipProvider>
-      <div className="flex h-screen flex-col">
+      <div ref={layoutRef} className="flex h-screen flex-col">
         <Header
           user={user}
           onSignIn={signIn}
@@ -50,7 +70,9 @@ function ChatLayout() {
 
         <ChatInput onSend={sendMessage} isLoading={isLoading} />
 
-        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+        <Suspense fallback={null}>
+          <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+        </Suspense>
       </div>
     </TooltipProvider>
   );

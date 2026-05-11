@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { type LucideIcon } from "lucide-react";
@@ -11,7 +12,7 @@ interface SettingRowProps {
   id: string;
 }
 
-export function SettingRow({
+export const SettingRow = memo(function SettingRow({
   icon: Icon,
   label,
   description,
@@ -33,4 +34,4 @@ export function SettingRow({
       <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
     </div>
   );
-}
+});

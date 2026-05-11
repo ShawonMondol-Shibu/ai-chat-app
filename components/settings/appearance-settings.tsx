@@ -1,11 +1,12 @@
 "use client";
 
+import { memo } from "react";
 import { useSettingsContext } from "@/contexts";
 import { SettingRow } from "./setting-row";
 import { Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 
-export function AppearanceSettings() {
+export const AppearanceSettings = memo(function AppearanceSettings() {
   const { settings, updateAppearance } = useSettingsContext();
   const { setTheme } = useTheme();
 
@@ -26,4 +27,4 @@ export function AppearanceSettings() {
       />
     </div>
   );
-}
+});

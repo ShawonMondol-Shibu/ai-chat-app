@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 
 interface QuickStartCardProps {
@@ -8,7 +9,7 @@ interface QuickStartCardProps {
   description: string;
 }
 
-export function QuickStartCard({ icon, title, description }: QuickStartCardProps) {
+export const QuickStartCard = memo(function QuickStartCard({ icon, title, description }: QuickStartCardProps) {
   return (
     <motion.div
       whileHover={{ scale: 1.03 }}
@@ -20,4 +21,4 @@ export function QuickStartCard({ icon, title, description }: QuickStartCardProps
       <p className="mt-1 text-xs text-muted-foreground">{description}</p>
     </motion.div>
   );
-}
+});

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { type ChatSession } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -33,7 +34,7 @@ interface SidebarProps {
   onToggleCollapse?: () => void;
 }
 
-export function Sidebar({
+export const Sidebar = memo(function Sidebar({
   chatHistory,
   activeChatId,
   isCollapsed = false,
@@ -201,4 +202,4 @@ export function Sidebar({
       </div>
     </motion.aside>
   );
-}
+});

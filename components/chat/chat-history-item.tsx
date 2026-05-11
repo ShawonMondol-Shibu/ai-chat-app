@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { type ChatSession } from "@/types";
 import { cn } from "@/lib";
 import { motion } from "framer-motion";
@@ -15,7 +16,7 @@ interface ChatHistoryItemProps {
   onDelete?: () => void;
 }
 
-export function ChatHistoryItem({
+export const ChatHistoryItem = memo(function ChatHistoryItem({
   chat,
   isActive = false,
   onClick,
@@ -68,4 +69,4 @@ export function ChatHistoryItem({
       </Button>
     </motion.div>
   );
-}
+});

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { type ContentType } from "@/types";
 import {
   Select,
@@ -22,7 +23,7 @@ interface ContentTypeSelectorProps {
   className?: string;
 }
 
-export function ContentTypeSelector({
+export const ContentTypeSelector = memo(function ContentTypeSelector({
   value,
   onChange,
   className,
@@ -77,4 +78,4 @@ export function ContentTypeSelector({
       </TooltipContent>
     </Tooltip>
   );
-}
+});

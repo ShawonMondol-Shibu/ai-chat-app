@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +34,7 @@ const TAB_COMPONENTS: Record<SettingsTab, React.ComponentType> = {
   privacy: PrivacySettings,
 };
 
-export function SettingsDialog({
+export const SettingsDialog = memo(function SettingsDialog({
   open,
   onOpenChange,
   defaultTab = "appearance",
@@ -76,4 +77,4 @@ export function SettingsDialog({
       </DialogContent>
     </Dialog>
   );
-}
+});

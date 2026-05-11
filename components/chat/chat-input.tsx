@@ -45,7 +45,7 @@ export function ChatInput({
   }, [content, resize]);
 
   const handleSend = () => {
-    if ((content.trim() || attachedFile) && !isLoading) {
+    if (content.trim() && !isLoading) {
       onSend(content.trim(), contentType);
       setContent("");
       setAttachedFile(null);
@@ -61,12 +61,19 @@ export function ChatInput({
   };
 
   const handleFileAttach = () => {
-    const mockFile: AttachedFile = {
-      name: "example.pdf",
-      size: 245000,
-      type: "application/pdf",
+    const input = document.createElement("input");
+    input.type = "file";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        setAttachedFile({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+        });
+      }
     };
-    setAttachedFile(mockFile);
+    input.click();
   };
 
   return (

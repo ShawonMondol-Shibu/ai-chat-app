@@ -1,18 +1,23 @@
 "use client";
 
+import { memo, useState } from "react";
 import { type Message } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { fadeInUp, transitionDefault } from "@/constants";
+import { TypewriterText } from "./typewriter-text";
 
 interface ChatMessageProps {
   message: Message;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export const ChatMessage = memo(function ChatMessage({
+  message,
+}: ChatMessageProps) {
   const isUser = message.role === "user";
+  const [isTyping, setIsTyping] = useState(true);
 
   return (
     <motion.div
@@ -43,14 +48,29 @@ export function ChatMessage({ message }: ChatMessageProps) {
           )}
         >
           <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-            {message.content}
+            {isUser ? (
+              message.content
+            ) : (
+              <TypewriterText
+                text={message.content}
+                onComplete={() => setIsTyping(false)}
+              />
+            )}
           </div>
         </div>
 
         <span className="text-xs text-muted-foreground">
-          {formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })}
+          {isTyping && !isUser ? (
+            <span className="inline-flex items-center gap-1">
+              <span className="h-1 w-1 animate-pulse rounded-full bg-muted-foreground" />
+              <span className="h-1 w-1 animate-pulse rounded-full bg-muted-foreground [animation-delay:0.15s]" />
+              <span className="h-1 w-1 animate-pulse rounded-full bg-muted-foreground [animation-delay:0.3s]" />
+            </span>
+          ) : (
+            formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })
+          )}
         </span>
       </div>
     </motion.div>
   );
-}
+});

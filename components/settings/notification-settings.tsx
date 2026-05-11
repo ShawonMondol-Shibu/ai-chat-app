@@ -1,10 +1,11 @@
 "use client";
 
+import { memo } from "react";
 import { useSettingsContext } from "@/contexts";
 import { SettingRow } from "./setting-row";
 import { Bell, Volume2 } from "lucide-react";
 
-export function NotificationSettings() {
+export const NotificationSettings = memo(function NotificationSettings() {
   const { settings, updateNotifications } = useSettingsContext();
 
   return (
@@ -29,4 +30,4 @@ export function NotificationSettings() {
       />
     </div>
   );
-}
+});

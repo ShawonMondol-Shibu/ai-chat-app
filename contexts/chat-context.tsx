@@ -6,6 +6,7 @@ import {
   useCallback,
   useState,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import { type Message, type ChatSession, type ContentType } from "@/types";
@@ -43,6 +44,11 @@ export function ChatProvider({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+  const activeSessionIdRef = useRef(activeSessionId);
+  activeSessionIdRef.current = activeSessionId;
+
   useEffect(() => {
     storageService.getSessions().then(setSessions);
   }, [storageService]);
@@ -72,11 +78,11 @@ export function ChatProvider({
     async (sessionId: string) => {
       await storageService.deleteSession(sessionId);
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-      if (activeSessionId === sessionId) {
+      if (activeSessionIdRef.current === sessionId) {
         createNewSession();
       }
     },
-    [activeSessionId, createNewSession, storageService],
+    [createNewSession, storageService],
   );
 
   const sendMessage = useCallback(
@@ -95,9 +101,10 @@ export function ChatProvider({
 
       setMessages((prev) => [...prev, userMessage]);
 
-      if (activeSessionId) {
-        await storageService.saveMessages(activeSessionId, [
-          ...messages,
+      const currentSessionId = activeSessionIdRef.current;
+      if (currentSessionId) {
+        await storageService.saveMessages(currentSessionId, [
+          ...messagesRef.current,
           userMessage,
         ]);
       }
@@ -113,14 +120,11 @@ export function ChatProvider({
           contentType,
         };
 
-        setMessages((prev) => [...prev, aiMessage]);
+        const updatedMessages = [...messagesRef.current, userMessage, aiMessage];
+        setMessages(updatedMessages);
 
-        if (activeSessionId) {
-          await storageService.saveMessages(activeSessionId, [
-            ...messages,
-            userMessage,
-            aiMessage,
-          ]);
+        if (currentSessionId) {
+          await storageService.saveMessages(currentSessionId, updatedMessages);
         } else {
           const newSession: ChatSession = {
             id: generateId(),
@@ -144,7 +148,7 @@ export function ChatProvider({
         setIsLoading(false);
       }
     },
-    [activeSessionId, aiService, messages, storageService],
+    [aiService, storageService],
   );
 
   return (
