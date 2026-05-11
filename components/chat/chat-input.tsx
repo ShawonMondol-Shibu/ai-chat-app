@@ -1,19 +1,19 @@
 "use client";
 
+import { memo, useState } from "react";
 import { ContentType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Spinner } from "@/components/ui/spinner";
 import { ContentTypeSelector } from "./content-type-selector";
 import { cn, formatFileSize } from "@/lib";
 import { motion } from "framer-motion";
 import { Send, Paperclip, X, File as FileIcon } from "lucide-react";
-import { useState, useEffect } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAutoResizeTextarea } from "@/hooks";
 import { fadeInDown, transitionSlow } from "@/constants";
 
 interface ChatInputProps {
@@ -28,7 +28,7 @@ interface AttachedFile {
   type: string;
 }
 
-export function ChatInput({
+export const ChatInput = memo(function ChatInput({
   onSend,
   isLoading = false,
   className,
@@ -38,18 +38,12 @@ export function ChatInput({
     ContentType.GENERAL,
   );
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
-  const { textareaRef, resize } = useAutoResizeTextarea();
-
-  useEffect(() => {
-    resize();
-  }, [content, resize]);
 
   const handleSend = () => {
     if (content.trim() && !isLoading) {
       onSend(content.trim(), contentType);
       setContent("");
       setAttachedFile(null);
-      resize();
     }
   };
 
@@ -82,7 +76,7 @@ export function ChatInput({
       animate={fadeInDown.animate}
       transition={transitionSlow}
       className={cn(
-        "fixed bottom-0 left-0 right-0 border-t bg-background/80 backdrop-blur-lg",
+        "border-t bg-background/80 backdrop-blur-lg",
         className,
       )}
     >
@@ -117,7 +111,6 @@ export function ChatInput({
           />
 
           <Textarea
-            ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -128,16 +121,12 @@ export function ChatInput({
           />
 
           <Tooltip>
-            <TooltipTrigger>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleFileAttach}
-                className="h-10 w-10 shrink-0 rounded-full"
-                disabled={isLoading}
-              >
-                <Paperclip className="h-5 w-5 text-muted-foreground" />
-              </Button>
+            <TooltipTrigger
+              onClick={handleFileAttach}
+              disabled={isLoading}
+              className="group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 h-10 w-10 rounded-full hover:bg-muted hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            >
+              <Paperclip className="h-5 w-5 text-muted-foreground" />
             </TooltipTrigger>
             <TooltipContent>
               <p>Attach a file</p>
@@ -145,49 +134,16 @@ export function ChatInput({
           </Tooltip>
 
           <Tooltip>
-            <TooltipTrigger>
-              <Button
-                size="icon"
-                onClick={handleSend}
-                disabled={(!content.trim() && !attachedFile) || isLoading}
-                className="h-10 w-10 shrink-0 rounded-full bg-primary hover:bg-primary/90"
-              >
-                {isLoading ? (
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  >
-                    <svg
-                      className="h-5 w-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        className="opacity-25"
-                      />
-                      <path
-                        d="M12 2a10 10 0 0 1 10 10"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        className="opacity-75"
-                      />
-                    </svg>
-                  </motion.div>
-                ) : (
-                  <Send className="h-5 w-5" />
-                )}
-              </Button>
+            <TooltipTrigger
+              onClick={handleSend}
+              disabled={(!content.trim() && !attachedFile) || isLoading}
+              className="group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/80 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            >
+              {isLoading ? (
+                <Spinner className="h-5 w-5 text-primary-foreground" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
             </TooltipTrigger>
             <TooltipContent>
               <p>Send message (Enter)</p>
@@ -197,4 +153,4 @@ export function ChatInput({
       </div>
     </motion.div>
   );
-}
+});

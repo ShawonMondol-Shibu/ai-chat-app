@@ -3,15 +3,16 @@
 import {
   createContext,
   useContext,
-  useState,
   useCallback,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 import { type User } from "@/types";
-import { MOCK_USER } from "@/constants";
+import { useSession, signOut } from "@/lib/auth-client";
 
 interface AuthContextValue {
   user: User | null;
+  isPending: boolean;
   signIn: () => void;
   signOut: () => void;
 }
@@ -23,18 +24,38 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(MOCK_USER);
+  const { data: session, isPending } = useSession();
+  const router = useRouter();
 
-  const signIn = useCallback(() => {
-    setUser(MOCK_USER);
-  }, []);
+  const betterUser = session?.user;
 
-  const signOut = useCallback(() => {
-    setUser(null);
-  }, []);
+  const user: User | null = betterUser
+    ? {
+        id: betterUser.id,
+        name: betterUser.name,
+        email: betterUser.email,
+        avatar: betterUser.image ?? undefined,
+      }
+    : null;
+
+  const handleSignIn = useCallback(() => {
+    router.push("/sign-in");
+  }, [router]);
+
+  const handleSignOut = useCallback(async () => {
+    await signOut();
+    router.refresh();
+  }, [router]);
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isPending,
+        signIn: handleSignIn,
+        signOut: handleSignOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

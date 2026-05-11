@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import { type Message } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatMessage } from "./chat-message";
@@ -13,17 +14,17 @@ import {
 } from "@/constants";
 import { Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
 
 interface ChatAreaProps {
   messages: Message[];
   isLoading?: boolean;
+  error?: string | null;
 }
 
 export const ChatArea = memo(function ChatArea({
   messages,
   isLoading = false,
+  error,
 }: ChatAreaProps) {
   const hasMessages = messages.length > 0;
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -34,10 +35,16 @@ export const ChatArea = memo(function ChatArea({
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error, { id: "chat-error" });
+    }
+  }, [error]);
+
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      <ScrollArea className="flex-1">
-        <div className="mx-auto flex min-h-full max-w-5xl flex-col justify-start px-4 py-8">
+    <div className="flex flex-1 flex-col overflow-hidden min-h-0">
+      <ScrollArea className="h-full w-full">
+        <div className="mx-auto flex min-h-full max-w-5xl flex-col justify-start px-6 py-8 pb-4">
           {!hasMessages ? (
             <EmptyState />
           ) : (
@@ -59,22 +66,6 @@ export const ChatArea = memo(function ChatArea({
 });
 
 function EmptyState() {
-  const iconRef = useRef<HTMLDivElement>(null);
-
-  useGSAP(
-    () => {
-      if (!iconRef.current) return;
-      gsap.to(iconRef.current, {
-        y: -8,
-        duration: 2,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-    },
-    { scope: iconRef },
-  );
-
   return (
     <motion.div
       initial={fadeInScale.initial}
@@ -82,12 +73,13 @@ function EmptyState() {
       transition={{ duration: 0.5 }}
       className="flex flex-1 flex-col items-center justify-center py-20"
     >
-      <div
-        ref={iconRef}
+      <motion.div
+        animate={{ y: -8 }}
+        transition={{ duration: 2, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
         className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-accent/10"
       >
         <Sparkles className="h-10 w-10 text-primary" />
-      </div>
+      </motion.div>
       <h2 className="mb-2 text-2xl font-semibold">Welcome to AI Chat</h2>
       <p className="max-w-md text-center text-muted-foreground">
         Start a conversation by typing a message below. Choose your content type

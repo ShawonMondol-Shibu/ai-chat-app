@@ -5,13 +5,14 @@ import {
   useContext,
   useCallback,
   useState,
-  useEffect,
   useRef,
+  useEffect,
   type ReactNode,
 } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Message, type ChatSession, type ContentType } from "@/types";
 import { generateId } from "@/lib";
-import { type AIService, type StorageService } from "@/services";
+import { type AIService, type ChatStorageService } from "@/services";
 
 interface ChatContextValue {
   messages: Message[];
@@ -30,7 +31,7 @@ const ChatContext = createContext<ChatContextValue | null>(null);
 interface ChatProviderProps {
   children: ReactNode;
   aiService: AIService;
-  storageService: StorageService;
+  storageService: ChatStorageService;
 }
 
 export function ChatProvider({
@@ -38,59 +39,53 @@ export function ChatProvider({
   aiService,
   storageService,
 }: ChatProviderProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const queryClient = useQueryClient();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const messagesRef = useRef(messages);
-  messagesRef.current = messages;
   const activeSessionIdRef = useRef(activeSessionId);
-  activeSessionIdRef.current = activeSessionId;
-
   useEffect(() => {
-    storageService.getSessions().then(setSessions);
-  }, [storageService]);
+    activeSessionIdRef.current = activeSessionId;
+  }, [activeSessionId]);
 
-  const loadSessionMessages = useCallback(
-    async (sessionId: string) => {
-      const stored = await storageService.getMessages(sessionId);
-      setMessages(stored);
-    },
-    [storageService],
-  );
+  const { data: sessions = [] } = useQuery({
+    queryKey: ["sessions"],
+    queryFn: () => storageService.getSessions(),
+  });
+
+  const { data: messages = [] } = useQuery({
+    queryKey: ["messages", activeSessionId],
+    queryFn: () =>
+      activeSessionId
+        ? storageService.getMessages(activeSessionId)
+        : Promise.resolve([]),
+    enabled: !!activeSessionId,
+  });
 
   const selectSession = useCallback(
     (sessionId: string) => {
       setActiveSessionId(sessionId);
-      loadSessionMessages(sessionId);
     },
-    [loadSessionMessages],
+    [],
   );
 
   const createNewSession = useCallback(() => {
     setActiveSessionId(null);
-    setMessages([]);
   }, []);
 
-  const deleteSession = useCallback(
-    async (sessionId: string) => {
-      await storageService.deleteSession(sessionId);
-      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-      if (activeSessionIdRef.current === sessionId) {
-        createNewSession();
-      }
+  const deleteMutation = useMutation({
+    mutationFn: (sessionId: string) => storageService.deleteSession(sessionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
     },
-    [createNewSession, storageService],
-  );
+  });
 
-  const sendMessage = useCallback(
-    async (content: string, contentType: ContentType) => {
-      if (!content.trim()) return;
-      setError(null);
-      setIsLoading(true);
-
+  const sendMutation = useMutation({
+    mutationFn: async ({
+      content,
+      contentType,
+    }: {
+      content: string;
+      contentType: ContentType;
+    }) => {
       const userMessage: Message = {
         id: generateId(),
         role: "user",
@@ -99,56 +94,65 @@ export function ChatProvider({
         contentType,
       };
 
-      setMessages((prev) => [...prev, userMessage]);
+      const currentId = activeSessionIdRef.current;
 
-      const currentSessionId = activeSessionIdRef.current;
-      if (currentSessionId) {
-        await storageService.saveMessages(currentSessionId, [
-          ...messagesRef.current,
-          userMessage,
-        ]);
+      if (currentId) {
+        await storageService.saveMessages(currentId, [userMessage]);
       }
 
-      try {
-        const response = await aiService.generateResponse(content, contentType);
+      queryClient.setQueryData<Message[]>(
+        ["messages", currentId],
+        (prev) => [...(prev || []), userMessage],
+      );
 
-        const aiMessage: Message = {
-          id: generateId(),
-          role: "assistant",
-          content: response,
+      const response = await aiService.generateResponse(content, contentType);
+
+      const aiMessage: Message = {
+        id: generateId(),
+        role: "assistant",
+        content: response,
+        timestamp: new Date(),
+        contentType,
+      };
+
+      const sessionId = currentId || generateId();
+
+      if (!currentId) {
+        const newSession: ChatSession = {
+          id: sessionId,
+          title: content.slice(0, 50) + (content.length > 50 ? "..." : ""),
           timestamp: new Date(),
-          contentType,
+          preview: content.slice(0, 80),
+          messageCount: 2,
+          messages: [userMessage, aiMessage],
         };
-
-        const updatedMessages = [...messagesRef.current, userMessage, aiMessage];
-        setMessages(updatedMessages);
-
-        if (currentSessionId) {
-          await storageService.saveMessages(currentSessionId, updatedMessages);
-        } else {
-          const newSession: ChatSession = {
-            id: generateId(),
-            title: content.slice(0, 50) + (content.length > 50 ? "..." : ""),
-            timestamp: new Date(),
-            preview: content.slice(0, 80),
-            messageCount: 2,
-            messages: [userMessage, aiMessage],
-          };
-          setActiveSessionId(newSession.id);
-          setSessions((prev) => [newSession, ...prev]);
-          await storageService.saveSession(newSession);
-          await storageService.saveMessages(newSession.id, [
-            userMessage,
-            aiMessage,
-          ]);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to get response");
-      } finally {
-        setIsLoading(false);
+        setActiveSessionId(sessionId);
+        await storageService.saveSession(newSession);
+        await storageService.saveMessages(sessionId, [
+          userMessage,
+          aiMessage,
+        ]);
+        queryClient.setQueryData(["messages", sessionId], [
+          userMessage,
+          aiMessage,
+        ]);
+        queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      } else {
+        await storageService.saveMessages(sessionId, [aiMessage]);
+        queryClient.setQueryData<Message[]>(
+          ["messages", sessionId],
+          (prev) => [...(prev || []), aiMessage],
+        );
       }
     },
-    [aiService, storageService],
+  });
+
+  const sendMessage = useCallback(
+    async (content: string, contentType: ContentType) => {
+      if (!content.trim()) return;
+      await sendMutation.mutateAsync({ content, contentType });
+    },
+    [sendMutation],
   );
 
   return (
@@ -157,12 +161,12 @@ export function ChatProvider({
         messages,
         sessions,
         activeSessionId,
-        isLoading,
-        error,
+        isLoading: sendMutation.isPending,
+        error: sendMutation.error?.message ?? null,
         sendMessage,
         createNewSession,
         selectSession,
-        deleteSession,
+        deleteSession: deleteMutation.mutate,
       }}
     >
       {children}

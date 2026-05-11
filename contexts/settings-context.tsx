@@ -3,16 +3,16 @@
 import {
   createContext,
   useContext,
-  useState,
-  useEffect,
   useCallback,
   type ReactNode,
 } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type AppSettings, DEFAULT_SETTINGS } from "@/types";
-import { type StorageService } from "@/services";
+import { type SettingsStorageService } from "@/services";
 
 interface SettingsContextValue {
   settings: AppSettings;
+  isLoading: boolean;
   updateAppearance: (appearance: Partial<AppSettings["appearance"]>) => void;
   updateNotifications: (
     notifications: Partial<AppSettings["notifications"]>,
@@ -24,67 +24,59 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 interface SettingsProviderProps {
   children: ReactNode;
-  storageService: StorageService;
+  storageService: SettingsStorageService;
 }
 
 export function SettingsProvider({
   children,
   storageService,
 }: SettingsProviderProps) {
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    storageService.getSettings().then((stored) => {
-      setSettings(stored);
-    });
-  }, [storageService]);
+  const { data: settings = DEFAULT_SETTINGS, isLoading } = useQuery({
+    queryKey: ["settings"],
+    queryFn: () => storageService.getSettings(),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: (updated: AppSettings) => storageService.saveSettings(updated),
+    onSuccess: (_, updated) => {
+      queryClient.setQueryData(["settings"], updated);
+    },
+  });
 
   const updateAppearance = useCallback(
     (appearance: Partial<AppSettings["appearance"]>) => {
-      setSettings((prev) => {
-        const updated = {
-          ...prev,
-          appearance: { ...prev.appearance, ...appearance },
-        };
-        storageService.saveSettings(updated);
-        return updated;
-      });
+      const updated = { ...settings, appearance: { ...settings.appearance, ...appearance } };
+      queryClient.setQueryData(["settings"], updated);
+      saveMutation.mutate(updated);
     },
-    [storageService],
+    [settings, queryClient, saveMutation],
   );
 
   const updateNotifications = useCallback(
     (notifications: Partial<AppSettings["notifications"]>) => {
-      setSettings((prev) => {
-        const updated = {
-          ...prev,
-          notifications: { ...prev.notifications, ...notifications },
-        };
-        storageService.saveSettings(updated);
-        return updated;
-      });
+      const updated = { ...settings, notifications: { ...settings.notifications, ...notifications } };
+      queryClient.setQueryData(["settings"], updated);
+      saveMutation.mutate(updated);
     },
-    [storageService],
+    [settings, queryClient, saveMutation],
   );
 
   const updatePrivacy = useCallback(
     (privacy: Partial<AppSettings["privacy"]>) => {
-      setSettings((prev) => {
-        const updated = {
-          ...prev,
-          privacy: { ...prev.privacy, ...privacy },
-        };
-        storageService.saveSettings(updated);
-        return updated;
-      });
+      const updated = { ...settings, privacy: { ...settings.privacy, ...privacy } };
+      queryClient.setQueryData(["settings"], updated);
+      saveMutation.mutate(updated);
     },
-    [storageService],
+    [settings, queryClient, saveMutation],
   );
 
   return (
     <SettingsContext.Provider
       value={{
         settings,
+        isLoading,
         updateAppearance,
         updateNotifications,
         updatePrivacy,

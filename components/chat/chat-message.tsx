@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useCallback } from "react";
 import { type Message } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib";
@@ -18,6 +18,7 @@ export const ChatMessage = memo(function ChatMessage({
 }: ChatMessageProps) {
   const isUser = message.role === "user";
   const [isTyping, setIsTyping] = useState(true);
+  const onTypewriterComplete = useCallback(() => setIsTyping(false), []);
 
   return (
     <motion.div
@@ -47,13 +48,14 @@ export const ChatMessage = memo(function ChatMessage({
               : "bg-muted text-muted-foreground",
           )}
         >
-          <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+          <div className={cn("break-words text-sm leading-relaxed", isUser && "whitespace-pre-wrap")}>
             {isUser ? (
               message.content
             ) : (
               <TypewriterText
+                key={message.content}
                 text={message.content}
-                onComplete={() => setIsTyping(false)}
+                onComplete={onTypewriterComplete}
               />
             )}
           </div>

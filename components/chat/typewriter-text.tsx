@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useRef, useEffect, useState } from "react";
+import { MarkdownContent } from "./markdown-content";
 
 interface TypewriterTextProps {
   text: string;
@@ -15,20 +16,24 @@ export const TypewriterText = memo(function TypewriterText({
 }: TypewriterTextProps) {
   const [displayed, setDisplayed] = useState("");
   const frameRef = useRef<number | null>(null);
+  const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
-    setDisplayed("");
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
+  useEffect(() => {
     const chars = text.split("");
     let i = 0;
 
     const animate = () => {
       if (i < chars.length) {
-        setDisplayed(chars.slice(0, i + 1).join(""));
+        const next = chars.slice(0, i + 1).join("");
+        setDisplayed(next);
         i++;
         frameRef.current = window.setTimeout(animate, speed);
       } else {
-        onComplete?.();
+        onCompleteRef.current?.();
       }
     };
 
@@ -37,7 +42,7 @@ export const TypewriterText = memo(function TypewriterText({
     return () => {
       if (frameRef.current !== null) clearTimeout(frameRef.current);
     };
-  }, [text, speed, onComplete]);
+  }, [text, speed]);
 
-  return <span>{displayed}</span>;
+  return <MarkdownContent text={displayed} />;
 });

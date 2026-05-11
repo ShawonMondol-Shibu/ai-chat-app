@@ -5,6 +5,7 @@ import {
   DEFAULT_SETTINGS,
 } from "@/types";
 import { type StorageService } from "@/services";
+import { parseTimestamps } from "@/lib/parse-timestamp";
 
 const MESSAGES_KEY = "chat_messages";
 const SESSIONS_KEY = "chat_sessions";
@@ -14,23 +15,25 @@ export class MockStorageService implements StorageService {
   async getMessages(sessionId: string): Promise<Message[]> {
     const stored = localStorage.getItem(`${MESSAGES_KEY}_${sessionId}`);
     if (!stored) return [];
-    return JSON.parse(stored).map((msg: Message) => ({
-      ...msg,
-      timestamp: new Date(msg.timestamp),
-    }));
+    return parseTimestamps(JSON.parse(stored));
   }
 
   async saveMessages(sessionId: string, messages: Message[]): Promise<void> {
-    localStorage.setItem(`${MESSAGES_KEY}_${sessionId}`, JSON.stringify(messages));
+    const existing = await this.getMessages(sessionId);
+    const existingIds = new Set(existing.map((m) => m.id));
+    const merged = [...existing];
+    for (const msg of messages) {
+      if (!existingIds.has(msg.id)) {
+        merged.push(msg);
+      }
+    }
+    localStorage.setItem(`${MESSAGES_KEY}_${sessionId}`, JSON.stringify(merged));
   }
 
   async getSessions(): Promise<ChatSession[]> {
     const stored = localStorage.getItem(SESSIONS_KEY);
     if (!stored) return [];
-    return JSON.parse(stored).map((session: ChatSession) => ({
-      ...session,
-      timestamp: new Date(session.timestamp),
-    }));
+    return parseTimestamps(JSON.parse(stored));
   }
 
   async saveSession(session: ChatSession): Promise<void> {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, lazy, Suspense, useRef } from "react";
+import { useState, lazy, Suspense } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   ChatProvider,
   SettingsProvider,
@@ -8,52 +9,54 @@ import {
   useChatContext,
   useAuthContext,
 } from "@/contexts";
-import { MockAIService, MockStorageService } from "@/services";
+import { ApiAIService, ApiStorageService } from "@/services";
 import { Header, Sidebar, ChatArea, ChatInput } from "@/components/chat";
+import { ProfileDialog } from "@/components/profile";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
+import { motion } from "framer-motion";
 
 const SettingsDialog = lazy(() =>
   import("@/components/settings").then((m) => ({ default: m.SettingsDialog })),
 );
 
-const aiService = new MockAIService();
-const storageService = new MockStorageService();
+const aiService = new ApiAIService();
+const storageService = new ApiStorageService();
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+  },
+};
+
+const childVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 function ChatLayout() {
-  const { messages, sessions, activeSessionId, isLoading, sendMessage, createNewSession, selectSession, deleteSession } =
+  const { messages, sessions, activeSessionId, isLoading, error, sendMessage, createNewSession, selectSession, deleteSession } =
     useChatContext();
   const { user, signIn, signOut } = useAuthContext();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const layoutRef = useRef<HTMLDivElement>(null);
-
-  useGSAP(
-    () => {
-      if (!layoutRef.current) return;
-      gsap.from(layoutRef.current.children, {
-        opacity: 0,
-        y: 20,
-        duration: 0.5,
-        stagger: 0.1,
-        ease: "power3.out",
-      });
-    },
-    { scope: layoutRef },
-  );
+  const [profileOpen, setProfileOpen] = useState(false);
 
   return (
     <TooltipProvider>
-      <div ref={layoutRef} className="flex h-screen flex-col">
-        <Header
-          user={user}
-          onSignIn={signIn}
-          onSignOut={signOut}
-          onSettings={() => setSettingsOpen(true)}
-        />
+      <motion.div className="flex h-screen flex-col" variants={containerVariants} initial="hidden" animate="visible">
+        <motion.div variants={childVariants} transition={{ duration: 0.5, type: "tween", ease: "easeOut" }}>
+          <Header
+            user={user}
+            onSignIn={signIn}
+            onSignOut={signOut}
+            onSettings={() => setSettingsOpen(true)}
+            onProfile={() => setProfileOpen(true)}
+          />
+        </motion.div>
 
-        <div className="flex flex-1 overflow-hidden">
+        <motion.div variants={childVariants} transition={{ duration: 0.5, type: "tween", ease: "easeOut" }} className="flex flex-1 overflow-hidden min-h-0">
           <Sidebar
             chatHistory={sessions}
             activeChatId={activeSessionId}
@@ -65,27 +68,52 @@ function ChatLayout() {
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           />
 
-          <ChatArea messages={messages} isLoading={isLoading} />
-        </div>
+          <ChatArea messages={messages} isLoading={isLoading} error={error} />
+        </motion.div>
 
-        <ChatInput onSend={sendMessage} isLoading={isLoading} />
+        <motion.div variants={childVariants} transition={{ duration: 0.5, type: "tween", ease: "easeOut" }}>
+          <ChatInput onSend={sendMessage} isLoading={isLoading} />
+        </motion.div>
 
         <Suspense fallback={null}>
           <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
         </Suspense>
-      </div>
+
+        <ProfileDialog
+          open={profileOpen}
+          onOpenChange={setProfileOpen}
+          user={user}
+          onSignOut={signOut}
+        />
+      </motion.div>
     </TooltipProvider>
+  );
+}
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 30_000, retry: 1 },
+  },
+});
+
+function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ChatProvider aiService={aiService} storageService={storageService}>
+          <SettingsProvider storageService={storageService}>
+            {children}
+          </SettingsProvider>
+        </ChatProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
 export default function Home() {
   return (
-    <AuthProvider>
-      <ChatProvider aiService={aiService} storageService={storageService}>
-        <SettingsProvider storageService={storageService}>
-          <ChatLayout />
-        </SettingsProvider>
-      </ChatProvider>
-    </AuthProvider>
+    <Providers>
+      <ChatLayout />
+    </Providers>
   );
 }

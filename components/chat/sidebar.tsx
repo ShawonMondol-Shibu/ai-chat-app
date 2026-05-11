@@ -65,19 +65,17 @@ export const Sidebar = memo(function Sidebar({
           </motion.span>
         )}
         <Tooltip>
-          <TooltipTrigger>
-            <Button
-              variant={isCollapsed ? "ghost" : "default"}
-              size={isCollapsed ? "icon" : "default"}
-              onClick={onNewChat}
-              className={cn(
-                "bg-primary hover:bg-primary/90",
-                isCollapsed && "w-10",
-              )}
-            >
-              <Plus className="h-5 w-5" />
-              {!isCollapsed && <span className="ml-2">New Chat</span>}
-            </Button>
+          <TooltipTrigger
+            className={cn(
+              "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+              isCollapsed
+                ? "h-8 w-8 hover:bg-muted hover:text-foreground"
+                : "h-8 gap-1.5 px-2.5 bg-primary text-primary-foreground hover:bg-primary/80",
+            )}
+            onClick={onNewChat}
+          >
+            <Plus className="h-5 w-5" />
+            {!isCollapsed && <span className="ml-2">New Chat</span>}
           </TooltipTrigger>
           {isCollapsed && (
             <TooltipContent side="right">
@@ -95,22 +93,22 @@ export const Sidebar = memo(function Sidebar({
         >
           <div className="flex items-center gap-2 rounded-lg bg-muted p-2">
             <Tooltip>
-              <TooltipTrigger>
-                <Button variant="ghost" size="sm" className="flex-1 text-xs">
-                  <MessageSquare className="mr-1 h-3.5 w-3.5" />
-                  Recent
-                </Button>
+              <TooltipTrigger
+                className="group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-xs font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 h-7 gap-1 px-2.5 flex-1 hover:bg-muted hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5"
+              >
+                <MessageSquare className="mr-1 h-3.5 w-3.5" />
+                Recent
               </TooltipTrigger>
               <TooltipContent>
                 <p>Recent chats</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger>
-                <Button variant="ghost" size="sm" className="flex-1 text-xs">
-                  <History className="mr-1 h-3.5 w-3.5" />
-                  Archive
-                </Button>
+              <TooltipTrigger
+                className="group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-xs font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 h-7 gap-1 px-2.5 flex-1 hover:bg-muted hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5"
+              >
+                <History className="mr-1 h-3.5 w-3.5" />
+                Archive
               </TooltipTrigger>
               <TooltipContent>
                 <p>Archived chats</p>
@@ -181,19 +179,15 @@ export const Sidebar = memo(function Sidebar({
         )}
 
         <Tooltip>
-          <TooltipTrigger>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggleCollapse}
-              className="ml-auto"
-            >
-              {isCollapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
-                <ChevronLeft className="h-4 w-4" />
-              )}
-            </Button>
+          <TooltipTrigger
+            onClick={onToggleCollapse}
+            className="group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 ml-auto h-8 w-8 hover:bg-muted hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
           </TooltipTrigger>
           <TooltipContent side="right">
             <p>{isCollapsed ? "Expand sidebar" : "Collapse sidebar"}</p>
