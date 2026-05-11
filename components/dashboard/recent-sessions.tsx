@@ -1,8 +1,24 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Clock, MessageSquare } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MessageSquare } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Empty, EmptyHeader } from "@/components/ui/empty";
+import { Badge } from "@/components/ui/badge";
 
 interface SessionRow {
   id: string;
@@ -23,39 +39,54 @@ export function RecentSessions({ sessions }: RecentSessionsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Recent Sessions</CardTitle>
+        <CardTitle>Recent Sessions</CardTitle>
+        <CardDescription>
+          Your latest conversations
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {sessions.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            No sessions yet
-          </p>
+          <Empty>
+            <EmptyHeader>
+              <MessageSquare className="size-8 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                No sessions yet. Start a conversation!
+              </p>
+            </EmptyHeader>
+          </Empty>
         ) : (
-          <div className="space-y-2">
-            {sessions.map((session) => (
-              <button
-                key={session.id}
-                onClick={() => router.push("/")}
-                className="flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-medium">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead className="hidden sm:table-cell">Messages</TableHead>
+                <TableHead className="hidden md:table-cell">Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.slice(0, 10).map((session) => (
+                <TableRow
+                  key={session.id}
+                  className="cursor-pointer"
+                  onClick={() => router.push("/")}
+                >
+                  <TableCell className="font-medium truncate max-w-[200px]">
                     {session.title}
-                  </p>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <MessageSquare className="h-3 w-3" />
-                      {session.messageCount}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {new Date(session.timestamp).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <Badge variant="secondary">{session.messageCount}</Badge>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">
+                    {new Date(session.timestamp).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

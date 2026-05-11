@@ -1,11 +1,32 @@
 "use client";
 
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pie, PieChart, Cell } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Empty, EmptyHeader } from "@/components/ui/empty";
+import { PieChart as PieChartIcon } from "lucide-react";
 
 interface ContentTypeChartProps {
   data: { contentType: string | null; count: number }[];
 }
+
+const LABELS: Record<string, string> = {
+  general: "General",
+  code: "Code",
+  technical: "Technical",
+  creative: "Creative",
+};
 
 const COLORS = [
   "var(--chart-1)",
@@ -15,32 +36,50 @@ const COLORS = [
   "var(--chart-5)",
 ];
 
-const LABELS: Record<string, string> = {
-  general: "General",
-  code: "Code",
-  technical: "Technical",
-  creative: "Creative",
-};
-
 export function ContentTypeChart({ data }: ContentTypeChartProps) {
   const chartData = data
     .filter((d) => d.contentType)
-    .map((d) => ({
-      name: LABELS[d.contentType!] || d.contentType,
+    .map((d, i) => ({
+      name: LABELS[d.contentType!] || d.contentType!,
       value: d.count,
+      fill: COLORS[i % COLORS.length],
     }));
 
-  if (chartData.length === 0) return null;
+  const chartConfig: ChartConfig = chartData.reduce(
+    (acc, d, i) => ({
+      ...acc,
+      [d.name.toLowerCase()]: {
+        label: d.name,
+        color: COLORS[i % COLORS.length],
+      },
+    }),
+    {} as ChartConfig,
+  );
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Messages by Type</CardTitle>
+        <CardTitle>Messages by Type</CardTitle>
+        <CardDescription>
+          Distribution of your conversations by content type
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-4">
-          <div className="h-48 w-48">
-            <ResponsiveContainer width="100%" height="100%">
+        {chartData.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <PieChartIcon className="size-8 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                No message data yet
+              </p>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
+            <ChartContainer
+              config={chartConfig}
+              className="aspect-square w-48 shrink-0"
+            >
               <PieChart>
                 <Pie
                   data={chartData}
@@ -51,33 +90,32 @@ export function ContentTypeChart({ data }: ContentTypeChartProps) {
                   dataKey="value"
                   paddingAngle={2}
                 >
-                  {chartData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  {chartData.map((entry, i) => (
+                    <Cell key={i} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--popover)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--radius)",
-                  }}
+                <ChartTooltip
+                  content={<ChartTooltipContent />}
                 />
               </PieChart>
-            </ResponsiveContainer>
+            </ChartContainer>
+
+            <div className="flex flex-col gap-3">
+              {chartData.map((d, i) => (
+                <div key={d.name} className="flex items-center gap-3 text-sm">
+                  <span
+                    className="size-3 shrink-0 rounded-full"
+                    style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                  />
+                  <span className="text-muted-foreground">{d.name}</span>
+                  <span className="ml-auto font-medium tabular-nums">
+                    {d.value}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="space-y-2">
-            {chartData.map((d, i) => (
-              <div key={d.name} className="flex items-center gap-2 text-sm">
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: COLORS[i % COLORS.length] }}
-                />
-                <span className="text-muted-foreground">{d.name}</span>
-                <span className="font-medium">{d.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
