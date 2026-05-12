@@ -41,9 +41,10 @@ export const Header = memo(function Header({
       transition={transitionSlow}
       className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b bg-background/80 px-6 backdrop-blur-lg"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <Image src="/logo_dark.png" alt="Shibu AI" width={105} height={117} className="h-9 w-auto block dark:hidden" priority />
         <Image src="/logo_white.png" alt="Shibu AI" width={99} height={110} className="h-9 w-auto hidden dark:block" priority />
+        <span className="hidden text-lg font-bold tracking-tight sm:inline">Shibu AI</span>
       </div>
 
       <nav className="hidden items-center gap-6 md:flex">

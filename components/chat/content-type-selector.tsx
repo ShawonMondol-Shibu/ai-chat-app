@@ -35,15 +35,17 @@ export const ContentTypeSelector = memo(function ContentTypeSelector({
     >
       <SelectTrigger
         className={cn(
-          "w-35 text-sm",
+          "w-fit sm:w-36 text-sm",
           className,
         )}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {SelectedIcon && (
-            <SelectedIcon className="h-4 w-4 text-primary" />
+            <SelectedIcon className="h-4 w-4 shrink-0 text-primary" />
           )}
-          <SelectValue placeholder="Select type" />
+          <span className="hidden sm:inline">
+            <SelectValue placeholder="Select type" />
+          </span>
         </div>
       </SelectTrigger>
       <SelectContent>
@@ -55,7 +57,7 @@ export const ContentTypeSelector = memo(function ContentTypeSelector({
                 <Icon className="h-4 w-4 text-primary" />
                 <div className="flex flex-col">
                   <span className="font-medium">{option.label}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="hidden sm:block text-xs text-muted-foreground">
                     {option.description}
                   </span>
                 </div>
