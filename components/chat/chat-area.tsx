@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { memo, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { type Message } from "@/types";
@@ -76,11 +77,15 @@ function EmptyState() {
       <motion.div
         animate={{ y: -8 }}
         transition={{ duration: 2, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-        className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-accent/10"
+        className="relative mb-6 flex h-28 w-28 items-center justify-center"
       >
-        <Sparkles className="h-10 w-10 text-primary" />
+        <div className="absolute inset-0 rounded-full bg-primary/10 blur-2xl backdrop-blur-xs" />
+        <div className="relative flex h-20 w-20 items-center justify-center">
+          <Image src="/logo_dark.png" alt="Shibu AI" width={105} height={117} className="h-16 w-auto block dark:hidden" priority />
+          <Image src="/logo_white.png" alt="Shibu AI" width={99} height={110} className="h-16 w-auto hidden dark:block" priority />
+        </div>
       </motion.div>
-      <h2 className="mb-2 text-2xl font-semibold">Welcome to AI Chat</h2>
+      <h2 className="mb-2 text-2xl font-semibold">Welcome to Shibu AI</h2>
       <p className="max-w-md text-center text-muted-foreground">
         Start a conversation by typing a message below. Choose your content type
         for better responses.

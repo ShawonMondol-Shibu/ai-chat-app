@@ -35,7 +35,7 @@ export const ContentTypeSelector = memo(function ContentTypeSelector({
     >
       <SelectTrigger
         className={cn(
-          "w-[140px] text-sm",
+          "w-35 text-sm",
           className,
         )}
       >

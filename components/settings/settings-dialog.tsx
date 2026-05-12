@@ -45,7 +45,7 @@ export const SettingsDialog = memo(function SettingsDialog({
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
-            Customize your AI Chat experience
+            Customize your Shibu AI experience
           </DialogDescription>
         </DialogHeader>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 export default function SignInPage() {
@@ -23,10 +23,11 @@ export default function SignInPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-accent/10">
-            <Sparkles className="h-8 w-8 text-primary" />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <Image src="/logo_dark.png" alt="Shibu AI" width={105} height={117} className="h-16 w-auto block dark:hidden" priority />
+            <Image src="/logo_white.png" alt="Shibu AI" width={99} height={110} className="h-16 w-auto hidden dark:block" priority />
           </div>
-          <CardTitle className="text-2xl font-bold">AI Chat</CardTitle>
+          <CardTitle className="text-2xl font-bold">Shibu AI</CardTitle>
           <CardDescription>
             Sign in to start chatting with AI
           </CardDescription>

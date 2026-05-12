@@ -16,8 +16,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Chat",
+  title: "Shibu AI",
   description: "Intelligent conversational AI assistant",
+  icons: {
+    icon: "/logo_dark.png",
+  },
 };
 
 export default function RootLayout({

@@ -13,9 +13,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
-import { LogOut, Settings, User as UserIcon, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import { fadeInDown, transitionSlow } from "@/constants";
 
 interface HeaderProps {
@@ -41,15 +42,8 @@ export const Header = memo(function Header({
       className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b bg-background/80 px-6 backdrop-blur-lg"
     >
       <div className="flex items-center gap-2">
-        <motion.div
-          animate={{ rotate: 360, scale: 1.1 }}
-          transition={{ duration: 3, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-        >
-          <Sparkles className="h-6 w-6 text-primary" />
-        </motion.div>
-        <span className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%] bg-clip-text text-transparent">
-          AI Chat
-        </span>
+        <Image src="/logo_dark.png" alt="Shibu AI" width={105} height={117} className="h-9 w-auto block dark:hidden" priority />
+        <Image src="/logo_white.png" alt="Shibu AI" width={99} height={110} className="h-9 w-auto hidden dark:block" priority />
       </div>
 
       <nav className="hidden items-center gap-6 md:flex">

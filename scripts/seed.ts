@@ -19,7 +19,7 @@ async function seed() {
     id: "seed-session-1",
     userId: "seed",
     title: "Getting Started",
-    preview: "Welcome to AI Chat! How can I help you today?",
+    preview: "Welcome to Shibu AI! How can I help you today?",
     messageCount: 2,
     timestamp: now.toISOString(),
     createdAt: now.toISOString(),

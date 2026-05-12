@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -14,6 +15,7 @@ import {
   Activity,
   TrendingUp,
 } from "lucide-react";
+import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -42,7 +44,21 @@ interface DashboardStats {
 
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      <DottedGlowBackground
+        className="pointer-events-none -z-10"
+        opacity={0.4}
+        gap={16}
+        radius={1.5}
+        colorLightVar="--color-neutral-400"
+        glowColorLightVar="--color-primary"
+        colorDarkVar="--color-neutral-700"
+        glowColorDarkVar="--color-primary"
+        backgroundOpacity={0}
+        speedMin={0.3}
+        speedMax={1.5}
+        speedScale={1}
+      />
       <header className="flex h-16 w-full items-center border-b bg-background/80 px-6 backdrop-blur-lg">
         <Skeleton className="h-8 w-32" />
         <Skeleton className="ml-auto h-5 w-24" />
@@ -101,7 +117,21 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4">
+      <div className="relative flex h-screen flex-col items-center justify-center gap-4 overflow-hidden">
+        <DottedGlowBackground
+          className="pointer-events-none -z-10"
+          opacity={0.4}
+          gap={16}
+          radius={1.5}
+          colorLightVar="--color-neutral-400"
+          glowColorLightVar="--color-primary"
+          colorDarkVar="--color-neutral-700"
+          glowColorDarkVar="--color-primary"
+          backgroundOpacity={0}
+          speedMin={0.3}
+          speedMax={1.5}
+          speedScale={1}
+        />
         <p className="text-destructive">{error}</p>
         <Link
           href="/"
@@ -118,7 +148,21 @@ export default function DashboardPage() {
   const totalSessions = stats?.totalSessions ?? 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      <DottedGlowBackground
+        className="pointer-events-none -z-10"
+        opacity={0.4}
+        gap={16}
+        radius={1.5}
+        colorLightVar="--color-neutral-400"
+        glowColorLightVar="--color-primary"
+        colorDarkVar="--color-neutral-700"
+        glowColorDarkVar="--color-primary"
+        backgroundOpacity={0}
+        speedMin={0.3}
+        speedMax={1.5}
+        speedScale={1}
+      />
       <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b bg-background/80 px-6 backdrop-blur-lg">
         <div className="flex items-center gap-4">
           <Link
@@ -128,8 +172,8 @@ export default function DashboardPage() {
             <ArrowLeft className="size-5" />
           </Link>
           <Separator orientation="vertical" className="h-6" />
-          <div className="flex items-center gap-2">
-            <Sparkles className="size-6 text-primary" />
+          <div className="flex items-center gap-3">
+            <Image src="/logo_dark.png" alt="Shibu AI" width={105} height={117} className="h-9 w-auto block dark:hidden" priority />
             <span className="text-xl font-bold tracking-tight">
               Dashboard
             </span>
